@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using VacationRental.Api.Models;
+using VacationRental.Common.Models;
 using Xunit;
 
 namespace VacationRental.Api.Tests
@@ -17,12 +17,16 @@ namespace VacationRental.Api.Tests
             _client = fixture.Client;
         }
 
-        [Fact]
-        public async Task GivenCompleteRequest_WhenPostBooking_ThenAGetReturnsTheCreatedBooking()
+        [Theory]
+        [InlineData(4, 2, 3)]
+        [InlineData(1, 1, 4)]
+        [InlineData(2, 2, 2)]
+        public async Task GivenCompleteRequest_WhenPostBooking_ThenAGetReturnsTheCreatedBooking(int units, int prepDays, int nights)
         {
             var postRentalRequest = new RentalBindingModel
             {
-                Units = 4
+                Units = units,
+                PreparationTimeInDays = prepDays
             };
 
             ResourceIdViewModel postRentalResult;
@@ -34,9 +38,9 @@ namespace VacationRental.Api.Tests
 
             var postBookingRequest = new BookingBindingModel
             {
-                 RentalId = postRentalResult.Id,
-                 Nights = 3,
-                 Start = new DateTime(2001, 01, 01)
+                RentalId = postRentalResult.Id,
+                Nights = nights,
+                Start = new DateTime(2001, 01, 01)
             };
 
             ResourceIdViewModel postBookingResult;
@@ -57,12 +61,16 @@ namespace VacationRental.Api.Tests
             }
         }
 
-        [Fact]
-        public async Task GivenCompleteRequest_WhenPostBooking_ThenAPostReturnsErrorWhenThereIsOverbooking()
+        [Theory]
+        [InlineData(1, 1, 3, 1)]
+        [InlineData(1, 1, 4, 2)]
+        [InlineData(2, 1, 5, 3)]
+        public async Task GivenCompleteRequest_WhenPostBooking_ThenAPostReturnsErrorWhenThereIsOverbooking(int units, int prepDays, int nights1, int nights2)
         {
             var postRentalRequest = new RentalBindingModel
             {
-                Units = 1
+                Units = units,
+                PreparationTimeInDays = prepDays
             };
 
             ResourceIdViewModel postRentalResult;
@@ -75,7 +83,7 @@ namespace VacationRental.Api.Tests
             var postBooking1Request = new BookingBindingModel
             {
                 RentalId = postRentalResult.Id,
-                Nights = 3,
+                Nights = nights1,
                 Start = new DateTime(2002, 01, 01)
             };
 
@@ -87,15 +95,13 @@ namespace VacationRental.Api.Tests
             var postBooking2Request = new BookingBindingModel
             {
                 RentalId = postRentalResult.Id,
-                Nights = 1,
+                Nights = nights2,
                 Start = new DateTime(2002, 01, 02)
             };
 
             await Assert.ThrowsAsync<ApplicationException>(async () =>
             {
-                using (var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request))
-                {
-                }
+                using var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request);
             });
         }
     }
