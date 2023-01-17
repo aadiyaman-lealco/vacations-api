@@ -96,5 +96,14 @@ namespace VacationRental.Api.Tests
                 Assert.Equal(2, getCalendarResult.Dates[4].PreparationTimes.Count);
             }
         }
+
+        [Fact]
+        public async Task GivenInvalidRentalId_WhenGetCalendar_ThrowsException()
+        {
+            await Assert.ThrowsAsync<ApplicationException>(async () =>
+            {
+                using var postBooking2Response = await _client.GetAsync($"/api/v1/calendar?rentalId=10&start=2023-01-01&nights=5");
+            });
+        }
     }
 }
