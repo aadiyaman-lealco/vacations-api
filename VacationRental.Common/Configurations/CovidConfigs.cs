@@ -2,6 +2,6 @@
 {
     public class CovidConfigs
     {
-        public int MinPreparationTimeInDays { get; set; }
+        public int MinimumPreparationTimeInDays { get; set; }
     }
 }

@@ -37,8 +37,8 @@ namespace VacationRental.Api.Controllers
         [HttpPost]
         public ResourceIdViewModel Post(RentalBindingModel model)
         {
-            if (model.PreparationTimeInDays < _options.MinPreparationTimeInDays)
-                throw new ApplicationException($"Preparation time in days cannot be lower than {_options.MinPreparationTimeInDays}");
+            if (model.PreparationTimeInDays < _options.MinimumPreparationTimeInDays)
+                throw new ApplicationException($"Preparation time in days cannot be lower than {_options.MinimumPreparationTimeInDays}");
 
             var key = new ResourceIdViewModel { Id = _rentalService.GetLastId() + 1 };
 
