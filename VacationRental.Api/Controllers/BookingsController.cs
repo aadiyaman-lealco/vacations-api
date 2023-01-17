@@ -37,13 +37,13 @@ namespace VacationRental.Api.Controllers
         {
             if (model.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
+
             var rental = _rentalService.GetById(model.RentalId);
             if (rental == null)
                 throw new ApplicationException("Rental not found");
 
             //Add prepartion days
             var totalLockDays = model.Nights + rental.PreparationTimeInDays;
-            var totalUnits = 0;
             for (var i = 0; i < totalLockDays; i++)
             {
                 var count = 0;
@@ -61,14 +61,11 @@ namespace VacationRental.Api.Controllers
                 {
                     throw new ApplicationException("Not available");
                 }
-                totalUnits += count;
             }
 
             var key = new ResourceIdViewModel { Id = _bookingService.GetLastId() + 1 };
 
             var mapped = _mapper.Map<BookingViewModel>(model);
-            mapped.PreparationTimeInDays = rental.PreparationTimeInDays;
-            mapped.Units = totalUnits;
             mapped.Id = key.Id;
 
             _bookingService.Create(mapped);

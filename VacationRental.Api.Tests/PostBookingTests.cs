@@ -65,6 +65,7 @@ namespace VacationRental.Api.Tests
         [InlineData(1, 1, 3, 1)]
         [InlineData(1, 1, 4, 2)]
         [InlineData(2, 1, 5, 3)]
+        [InlineData(5, 2, 10, 15)]
         public async Task GivenCompleteRequest_WhenPostBooking_ThenAPostReturnsErrorWhenThereIsOverbooking(int units, int prepDays, int nights1, int nights2)
         {
             var postRentalRequest = new RentalBindingModel
@@ -80,16 +81,20 @@ namespace VacationRental.Api.Tests
                 postRentalResult = await postRentalResponse.Content.ReadAsAsync<ResourceIdViewModel>();
             }
 
-            var postBooking1Request = new BookingBindingModel
+            // Over booking for each unit
+            for (int i = 0; i < units; i++)
             {
-                RentalId = postRentalResult.Id,
-                Nights = nights1,
-                Start = new DateTime(2002, 01, 01)
-            };
+                var postBooking1Request = new BookingBindingModel
+                {
+                    RentalId = postRentalResult.Id,
+                    Nights = nights1,
+                    Start = new DateTime(2002, 01, 01)
+                };
 
-            using (var postBooking1Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking1Request))
-            {
-                Assert.True(postBooking1Response.IsSuccessStatusCode);
+                using (var postBooking1Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking1Request))
+                {
+                    Assert.True(postBooking1Response.IsSuccessStatusCode);
+                }
             }
 
             var postBooking2Request = new BookingBindingModel
